@@ -1,0 +1,43 @@
+﻿<Window x:Class="TestProj.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="400" Width="600">
+    <Grid Background="Teal">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="8*"></RowDefinition>
+            <RowDefinition Height="30"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*"></ColumnDefinition>
+                <ColumnDefinition Width="5*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Image Grid.Column="0" x:Name="SourceImage" Margin="10"/>
+            <Image Grid.Column="1" x:Name="DestinationImage" Margin="10"/>
+        </Grid>
+        <Grid Grid.Row="1" Background="DarkSlateBlue">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="6*"></ColumnDefinition>
+                <ColumnDefinition Width="4*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <Label x:Name="RxLabel">Rx: N/A</Label>
+                    <Label x:Name="RyLabel">Ry: N/A</Label>
+                    <Label x:Name="RzLabel">Rz: N/A</Label>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                <ComboBox Height="20" Width="80" SelectionChanged="OnCaptureTypeChanged">
+                    <ComboBoxItem>Camera</ComboBoxItem>
+                    <ComboBoxItem>Video</ComboBoxItem>
+                </ComboBox>
+
+                <Button Click="OnStartButtonClick" Width="50" Margin="5">Start</Button>
+                <Button Click="OnStopButtonClick" Width="50" Margin="5">Stop</Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+
+
+</Window>

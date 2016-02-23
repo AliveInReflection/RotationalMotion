@@ -22,6 +22,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
                 <StackPanel Orientation="Horizontal">
+                    <Button Click="OnClearButtonClick" Width="50" Margin="5">Clear</Button>
                     <Label x:Name="RxLabel">Rx: N/A</Label>
                     <Label x:Name="RyLabel">Ry: N/A</Label>
                     <Label x:Name="RzLabel">Rz: N/A</Label>

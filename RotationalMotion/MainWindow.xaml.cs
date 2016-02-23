@@ -10,10 +10,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.GPU;
 using Emgu.CV.Structure;
-using Size = System.Drawing.Size;
-using Point = System.Drawing.Point;
-using MathNet.Numerics.LinearAlgebra;
+using Emgu.CV.VideoStab;
 using MathNet.Numerics.LinearAlgebra.Double;
 using Matrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
@@ -31,24 +30,27 @@ namespace TestProj
         private bool _started = false;
         private Image<Gray, byte> _prevFrame;
         private Image<Gray, byte> _prevBuffer;
-        private PointF[] _prevFeatures;
         private Matrix _rotation;
+        private OnePassStabilizer _stabilizer;
+        private FrameSource _frameSource;
+        private PointF[][] _prevFeatures;
+        private PointF[] _currFeatures;
 
-        private int _videoRate = 30;
+        private int _videoRate = 20;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _capture = new Capture(_videoPath);
-            //_capture = new Capture();
-          
+            // _capture = new Capture(_videoPath);
+            _capture = new Capture();
+            _frameSource = new CaptureFrameSource(_capture);
+            _stabilizer = new OnePassStabilizer(_frameSource);        
 
             _timer = new Timer(1000 / _videoRate);
             _timer.Elapsed += OnTimerTick;
 
             _prevBuffer = new Image<Gray, byte>(640, 480);
-            _prevFeatures = new PointF[0];
 
             _rotation = DenseMatrix.OfArray(new double[,]{{0}, {0}, {0}});
 
@@ -75,30 +77,40 @@ namespace TestProj
 
             using (var currentFrame = _capture.RetrieveGrayFrame())
             {
+                //var tmp = _stabilizer.NextFrame();
                 if (_prevFrame != null)
                 {
                     Image<Gray, float> flowX = new Image<Gray, float>(640, 480);
                     Image<Gray, float> flowY = new Image<Gray, float>(640, 480);
 
-                    OpticalFlow.Farneback(_prevFrame, currentFrame, flowX, flowY, 0.1, 2, 4, 1, 2, 1.2, OPTICALFLOW_FARNEBACK_FLAG.FARNEBACK_GAUSSIAN);
+                    //OpticalFlow.Farneback(_prevFrame, currentFrame, flowX, flowY, 0.1, 2, 4, 1, 2, 1.2, OPTICALFLOW_FARNEBACK_FLAG.FARNEBACK_GAUSSIAN);
 
                     //OpticalFlow.HS(_prevFrame, currentFrame, true, flowX, flowY, 1, new MCvTermCriteria(20));
                     //cv2.calcOpticalFlowFarneback(prvs,next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
 
-                    //OpticalFlow.LK(_prevFrame, currentFrame, new Size(5, 5), flowX, flowY);
+                    //OpticalFlow.LK(_prevFrame, currentFrame, new System.Drawing.Size(5, 5), flowX, flowY);
 
 
                     //var currentBuffer = new Image<Gray, byte>(640, 480);
                     //var currentFeatures = new PointF[0];
                     //var currentStatus = new byte[0];
                     //var trackError = new float[0];
-                    //OpticalFlow.PyrLK(_prevFrame, currentFrame, _prevBuffer, currentBuffer, _prevFeatures, new Size(5, 5), 4, new MCvTermCriteria(5), LKFLOW_TYPE.DEFAULT, out currentFeatures, out currentStatus, out trackError);
+                    //OpticalFlow.PyrLK(_prevFrame, currentFrame, _prevBuffer, currentBuffer, _prevFeatures, new System.Drawing.Size(5, 5), 4, new MCvTermCriteria(5), LKFLOW_TYPE.DEFAULT, out currentFeatures, out currentStatus, out trackError);
+                    //_prevFeatures = currentFeatures;
 
-                    CalculateAngles(flowX, flowY, 2);
+                    _prevFeatures = _prevFrame.GoodFeaturesToTrack(5, 1, 10, 10);
+                    var criteria = new MCvTermCriteria();
+                    byte[] status;
+                    float[] error;
+
+                    OpticalFlow.PyrLK(_prevFrame, currentFrame, _prevFeatures[0], new System.Drawing.Size(10,10), 1, criteria, out _currFeatures, out status, out error);
+
+                    CalculateAngles(flowX, flowY, 10);
 
                     var flowMap = currentFrame.Clone().Convert<Gray, float>();
 
-                    DrawFlowVectors(flowMap, flowX, flowY, 10);
+                    //DrawFlowVectors(flowMap, flowX, flowY, 5);
+                    DrawFlowVectorsForPyrLk(flowMap, _prevFeatures[0], _currFeatures);
 
                     ShowImages(currentFrame, flowMap);
                     ShowAngles();
@@ -199,8 +211,27 @@ namespace TestProj
                     var from = new PointF(j, i);
                     var to = new PointF(j + flowY.Data[i, j, 0], i + flowX.Data[i,j,0]);
 
-                    image.Draw(new LineSegment2DF(from, to), new Gray(0), 1);
+                    image.Draw(new LineSegment2DF(from, to), new Gray(100), 1);
                 }
+            }
+        }
+
+        private void DrawFlowVectorsForPyrLk(Image<Gray, float> image, PointF[] prev, PointF[] cur)
+        {
+            for (int i = 0; i < prev.Length; i++)
+            {
+                image.Draw(new LineSegment2DF(prev[i], cur[i]), new Gray(100), 1);
+            }
+        }
+
+        private void DrawFlowVectorsInFitures(Image<Gray, float> image, Image<Gray, float> flowX, Image<Gray, float> flowY,
+            PointF[]features)
+        {
+            foreach (var feature in features)
+            {
+                var from = new PointF(feature.X, feature.Y);
+                var to = new PointF(feature.Y + flowY.Data[(int)feature.X, (int)feature.Y, 0] * 10, (int)feature.X + flowX.Data[(int)feature.X, (int)feature.Y, 0] * 10);
+                image.Draw(new LineSegment2DF(from, to), new Gray(100), 1);
             }
         }
 
@@ -221,8 +252,8 @@ namespace TestProj
             {
                 for (int x = 0; x < flowX.Width; x += step)
                 {
-                    var u = flowX.Data[y, x, 0];
-                    var v = flowY.Data[y, x, 0];
+                    var u = flowX.Data[y, x, 0] * 3;
+                    var v = flowY.Data[y, x, 0] * 3;
 
                     a += x * x * y * y + (y * y + 1);
                     b += (x*x + 1) + x*x*y*y;
@@ -240,6 +271,12 @@ namespace TestProj
             Matrix matrix31 = DenseMatrix.OfArray(new double[,]{{k}, {l}, {m}});
 
             _rotation += matrix33.Inverse() * matrix31;
+        }
+
+        private void OnClearButtonClick(object sender, RoutedEventArgs e)
+        {
+            _rotation = DenseMatrix.OfArray(new double[,] { { 0 }, { 0 }, { 0 } });
+
         }
     }
 }

@@ -16,6 +16,7 @@ using Point = System.Drawing.Point;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 using Matrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
+using System.ComponentModel;
 
 
 namespace TestProj
@@ -34,14 +35,14 @@ namespace TestProj
         private PointF[] _prevFeatures;
         private Matrix _rotation;
 
-        private int _videoRate = 30;
+        private int _videoRate = 20;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _capture = new Capture(_videoPath);
-            //_capture = new Capture();
+            //_capture = new Capture(_videoPath);
+            _capture = new Capture();
           
 
             _timer = new Timer(1000 / _videoRate);
@@ -80,9 +81,9 @@ namespace TestProj
                     Image<Gray, float> flowX = new Image<Gray, float>(640, 480);
                     Image<Gray, float> flowY = new Image<Gray, float>(640, 480);
 
-                    OpticalFlow.Farneback(_prevFrame, currentFrame, flowX, flowY, 0.1, 2, 4, 1, 2, 1.2, OPTICALFLOW_FARNEBACK_FLAG.FARNEBACK_GAUSSIAN);
+                    //OpticalFlow.Farneback(_prevFrame, currentFrame, flowX, flowY, 0.5, 3, 15, 3, 5, 1.2, OPTICALFLOW_FARNEBACK_FLAG.FARNEBACK_GAUSSIAN);
 
-                    //OpticalFlow.HS(_prevFrame, currentFrame, true, flowX, flowY, 1, new MCvTermCriteria(20));
+                    OpticalFlow.HS(_prevFrame, currentFrame, true, flowX, flowY, 1, new MCvTermCriteria(20));
                     //cv2.calcOpticalFlowFarneback(prvs,next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
 
                     //OpticalFlow.LK(_prevFrame, currentFrame, new Size(5, 5), flowX, flowY);
@@ -94,11 +95,11 @@ namespace TestProj
                     //var trackError = new float[0];
                     //OpticalFlow.PyrLK(_prevFrame, currentFrame, _prevBuffer, currentBuffer, _prevFeatures, new Size(5, 5), 4, new MCvTermCriteria(5), LKFLOW_TYPE.DEFAULT, out currentFeatures, out currentStatus, out trackError);
 
-                    CalculateAngles(flowX, flowY, 2);
+                    CalculateAngles(flowX, flowY, 10);
 
                     var flowMap = currentFrame.Clone().Convert<Gray, float>();
 
-                    DrawFlowVectors(flowMap, flowX, flowY, 10);
+                    DrawFlowVectors(flowMap, flowX, flowY, 20);
 
                     ShowImages(currentFrame, flowMap);
                     ShowAngles();
@@ -183,8 +184,8 @@ namespace TestProj
         {
             Dispatcher.Invoke(() =>
             {
-                RxLabel.Content = string.Format("Rx: {0};", Math.Round(_rotation[0, 0]*180/Math.PI, 5));
-                RyLabel.Content = string.Format("Ry: {0};", Math.Round(_rotation[1, 0]*180/Math.PI, 5));
+                RxLabel.Content = string.Format("Rx: {0};", Math.Round(_rotation[0, 0] * 180/Math.PI, 5));
+                RyLabel.Content = string.Format("Ry: {0};", Math.Round(_rotation[1, 0] * 180/Math.PI, 5));
                 RzLabel.Content = string.Format("Rz: {0};", Math.Round(_rotation[2, 0] * 180 / Math.PI, 5));
             });
         }
@@ -197,7 +198,7 @@ namespace TestProj
                 for (int j = 0; j < image.Width; j+=step)
                 {
                     var from = new PointF(j, i);
-                    var to = new PointF(j + flowY.Data[i, j, 0], i + flowX.Data[i,j,0]);
+                    var to = new PointF(j + flowX.Data[i, j, 0] * 5, i + flowY.Data[i, j, 0] * 5);
 
                     image.Draw(new LineSegment2DF(from, to), new Gray(0), 1);
                 }
@@ -221,8 +222,8 @@ namespace TestProj
             {
                 for (int x = 0; x < flowX.Width; x += step)
                 {
-                    var u = flowX.Data[y, x, 0];
-                    var v = flowY.Data[y, x, 0];
+                    var u = Math.Abs(flowX.Data[y, x, 0]) < 20 ? 0 : flowX.Data[y, x, 0];
+                    var v = Math.Abs(flowY.Data[y, x, 0]) < 20 ? 0 : flowY.Data[y, x, 0];
 
                     a += x * x * y * y + (y * y + 1);
                     b += (x*x + 1) + x*x*y*y;
@@ -239,7 +240,11 @@ namespace TestProj
             Matrix matrix33 = DenseMatrix.OfArray(new double[,]{{a,d,f}, {d,b,e}, {f, e, c}});
             Matrix matrix31 = DenseMatrix.OfArray(new double[,]{{k}, {l}, {m}});
 
-            _rotation += matrix33.Inverse() * matrix31;
+            var result = matrix33.Inverse() * matrix31;
+
+            _rotation[0, 0] += Math.Abs(result[0, 0]) > 0.0001 ? result[0,0] : 0;
+            _rotation[1, 0] += Math.Abs(result[1, 0]) > 0.0001 ? result[1, 0] : 0;
+            _rotation[2, 0] += Math.Abs(result[2, 0]) > 0.0001 ? result[2, 0] : 0;
         }
     }
 }

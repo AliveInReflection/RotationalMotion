@@ -14,7 +14,7 @@ namespace RotationalMotion.Concrete
 
         public IEnumerable<FlowModel> CalculateFlow(Image<Gray, byte> prev, Image<Gray, byte> cur)
         {
-            var prevFeatures = prev.GoodFeaturesToTrack(50, 0.01d, 0.01d, 10);
+            var prevFeatures = prev.GoodFeaturesToTrack(300, 0.01d, 0.01d, 10);
             PointF[] currFeatures;
             var criteria = new MCvTermCriteria(30, 0.01);
             byte[] status;
@@ -38,7 +38,6 @@ namespace RotationalMotion.Concrete
 
             return result;
         }
-
 
     }
 }

@@ -33,6 +33,7 @@ namespace RotationalMotion.Infrastructure
 
         public ImageProcessor()
         {
+            //_capture = new Capture("IzhFly.mp4");
             _capture = new Capture();
             _frameSource = new CaptureFrameSource(_capture);
             _stabilizer = new OnePassStabilizer(_frameSource);
@@ -50,11 +51,11 @@ namespace RotationalMotion.Infrastructure
 
                 if (_prevFrame != null)
                 {
-                    var optFlow = optFlowCalculator.CalculateFlow(_prevFrame, _curFrame).ToList();
-                    CalculateAngles(optFlow);
-
                     try
                     {
+                        var optFlow = optFlowCalculator.CalculateFlow(_prevFrame, _curFrame).ToList();
+                        CalculateAngles(optFlow);
+
                         var prevFrame = _prevFrame.Clone();
                         var curFrame = _curFrame.Clone();
 
@@ -146,8 +147,6 @@ namespace RotationalMotion.Infrastructure
             //_rotation[0, 0] = result[0, 0];
             //_rotation[1, 0] = result[1, 0];
             //_rotation[2, 0] = result[2, 0];
-
-            Debug.WriteLine("dx: " + result[0, 0] + " dy: " + result[1, 0] + " dz: " + result[2, 0] );
 
             //_rotation[0, 0] += result[0, 0].Abs() > _sensitivity ? result[0, 0] : 0;
             //_rotation[1, 0] += result[1, 0].Abs() > _sensitivity ? result[1, 0] : 0;

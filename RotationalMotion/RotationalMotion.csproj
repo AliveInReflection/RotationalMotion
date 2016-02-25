@@ -97,7 +97,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Concrete\DualTVLOpticalFlowAlgorithm.cs" />
     <Compile Include="Concrete\FarnebackOpticalFlowAlgorithm.cs" />
+    <Compile Include="Concrete\LKOpticalFlowAlgorithm.cs" />
     <Compile Include="Models\ProcessingResult.cs" />
     <Compile Include="Utils\Extensions.cs" />
     <Page Include="MainWindow.xaml">
@@ -168,6 +170,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="x64\opencv_features2d2410.dll" />
+    <Content Include="x64\opencv_ffmpeg.dll" />
+    <Content Include="x64\opencv_ffmpeg2410.dll" />
     <Content Include="x64\opencv_flann2410.dll" />
     <Content Include="x64\opencv_gpu2410.dll" />
     <Content Include="x64\opencv_highgui2410.dll" />

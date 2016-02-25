@@ -39,16 +39,16 @@ namespace RotationalMotion.Utils
             return result;
         }
 
-        public static double Abs(this double val)
-        {
-            return Math.Abs(val);
-        }
+        //public static double Abs(this double val)
+        //{
+        //    return Math.Abs(val);
+        //}
 
-        public static void Abs(this PointF point)
-        {
-            point.X = Math.Abs(point.X);
-            point.Y = Math.Abs(point.Y);
-        }
+        //public static void Abs(this PointF point)
+        //{
+        //    point.X = Math.Abs(point.X);
+        //    point.Y = Math.Abs(point.Y);
+        //}
 
         public static double ToDegrees(this double val)
         {

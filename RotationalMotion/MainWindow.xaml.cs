@@ -29,7 +29,7 @@ namespace RotationalMotion
         private ImageProcessor _processor;
         private IOpticalFlowAlgorithm _algorithm;
 
-        private int _videoRate = 10;
+        private int _videoRate = 15;
 
         public MainWindow()
         {
@@ -40,7 +40,9 @@ namespace RotationalMotion
 
             _processor = new ImageProcessor();
             _algorithm = new PyrLkOpticalFlowAlgorithm();
-            //_algorithm = new FarnebackOpticalFlowCalculator(640, 480, 10);
+            //_algorithm = new FarnebackOpticalFlowAlgorithm(640, 480, 20);
+            //_algorithm = new DualTVLOpticalFlowAlgorithm(640, 480, 20);
+            //_algorithm = new LKOpticalFlowAlgorithm(640, 480, 20);
         }
 
         

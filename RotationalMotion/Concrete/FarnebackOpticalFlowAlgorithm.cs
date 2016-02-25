@@ -30,7 +30,7 @@ namespace RotationalMotion.Concrete
             Image<Gray, float> flowX = new Image<Gray, float>(_width, _height);
             Image<Gray, float> flowY = new Image<Gray, float>(_width, _height);
 
-            OpticalFlow.Farneback(prev, cur, flowX, flowY, 0.1, 2, 4, 1, 2, 1.2, OPTICALFLOW_FARNEBACK_FLAG.FARNEBACK_GAUSSIAN);
+            OpticalFlow.Farneback(prev, cur, flowX, flowY, 0.5, 2, 10, 20, 7, 1.5, OPTICALFLOW_FARNEBACK_FLAG.FARNEBACK_GAUSSIAN);
 
             return flowX.Combine(flowY, _step);
         }

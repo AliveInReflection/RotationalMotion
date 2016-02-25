@@ -12,13 +12,13 @@ using RotationalMotion.Utils;
 
 namespace RotationalMotion.Concrete
 {
-    public class FarnebackOpticalFlowCalculator : IOpticalFlowCalculator
+    public class FarnebackOpticalFlowAlgorithm : IOpticalFlowAlgorithm
     {
         private int _step;
         private int _width;
         private int _height;
 
-        public FarnebackOpticalFlowCalculator(int width, int height, int step)
+        public FarnebackOpticalFlowAlgorithm(int width, int height, int step)
         {
             _height = height;
             _width = width;

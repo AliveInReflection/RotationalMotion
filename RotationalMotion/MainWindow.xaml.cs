@@ -27,7 +27,7 @@ namespace RotationalMotion
         private bool _started = false;
 
         private ImageProcessor _processor;
-        private IOpticalFlowCalculator _algorithm;
+        private IOpticalFlowAlgorithm _algorithm;
 
         private int _videoRate = 10;
 
@@ -39,7 +39,7 @@ namespace RotationalMotion
             _timer.Elapsed += OnTimerTick;
 
             _processor = new ImageProcessor();
-            _algorithm = new PyrLkOpticalFlowCalculator();
+            _algorithm = new PyrLkOpticalFlowAlgorithm();
             //_algorithm = new FarnebackOpticalFlowCalculator(640, 480, 10);
         }
 

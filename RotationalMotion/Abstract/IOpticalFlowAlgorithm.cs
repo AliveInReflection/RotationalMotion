@@ -10,7 +10,7 @@ using RotationalMotion.Models;
 
 namespace RotationalMotion.Abstract
 {
-    public interface IOpticalFlowCalculator
+    public interface IOpticalFlowAlgorithm
     {
         IEnumerable<FlowModel> CalculateFlow(Image<Gray, byte> prev, Image<Gray, byte> cur);
     }

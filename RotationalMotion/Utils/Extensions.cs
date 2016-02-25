@@ -77,7 +77,7 @@ namespace RotationalMotion.Utils
             {
                 var from = vector.Point;
                 var to = new PointF(vector.Point.X + vector.Flow.X, vector.Point.Y + vector.Flow.Y);
-                image.Draw(new LineSegment2DF(from,to), new Gray(1), 1);
+                image.Draw(new LineSegment2DF(from,to), new Gray(1), 2);
             }
         }
 

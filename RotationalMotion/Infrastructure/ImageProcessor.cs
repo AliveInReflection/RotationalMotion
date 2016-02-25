@@ -40,7 +40,7 @@ namespace RotationalMotion.Infrastructure
             _rotation = DenseMatrix.OfArray(new double[,] { { 0 }, { 0 }, { 0 } });
         }
 
-        public ProcessingResult NextFrame(IOpticalFlowCalculator optFlowCalculator)
+        public ProcessingResult NextFrame(IOpticalFlowAlgorithm optFlowCalculator)
         {
             ProcessingResult result = null;
 

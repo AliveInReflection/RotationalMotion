@@ -10,8 +10,7 @@ namespace RotationalMotion.Models
 {
     public class ProcessingResult
     {
-        public Bitmap Previous { get; set; }
-        public Bitmap Current { get; set; }
+        public Bitmap Frame { get; set; }
         public Matrix Rotation { get; set; }
     }
 }

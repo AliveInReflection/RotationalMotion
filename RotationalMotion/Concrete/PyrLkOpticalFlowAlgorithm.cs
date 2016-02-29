@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -14,9 +15,9 @@ namespace RotationalMotion.Concrete
 
         public IEnumerable<FlowModel> CalculateFlow(Image<Gray, byte> prev, Image<Gray, byte> cur)
         {
-            var prevFeatures = prev.GoodFeaturesToTrack(300, 0.01d, 0.01d, 10);
+            var prevFeatures = prev.GoodFeaturesToTrack(500, 0.01d, 0.01d, 10);
             PointF[] currFeatures;
-            var criteria = new MCvTermCriteria(30, 0.01);
+            var criteria = new MCvTermCriteria(300, 0.01);
             byte[] status;
             float[] error;
 
@@ -24,10 +25,18 @@ namespace RotationalMotion.Concrete
 
             var result = new List<FlowModel>();
 
+            var width = prev.Width;
+            var height = prev.Height;
+
             for (int i = 0; i < prevFeatures[0].Length; i++)
             {
-                if (status[i] == 1)
+                if (status[i] == 1 && currFeatures[i].X <= width && currFeatures[i].Y <= height)
                 {
+                    if (currFeatures[i].X < 0 || currFeatures[i].Y < 0)
+                    {
+                        Debug.WriteLine(currFeatures[i].X);
+                    }
+
                     result.Add(new FlowModel()
                     {
                         Point = prevFeatures[0][i],

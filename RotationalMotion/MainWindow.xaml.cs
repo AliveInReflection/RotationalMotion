@@ -40,7 +40,7 @@ namespace RotationalMotion
 
             _processor = new ImageProcessor();
             _algorithm = new PyrLkOpticalFlowAlgorithm();
-            //_algorithm = new FarnebackOpticalFlowAlgorithm(640, 480, 20);
+            //_algorithm = new FarnebackOpticalFlowAlgorithm(1280, 720, 20);
             //_algorithm = new DualTVLOpticalFlowAlgorithm(640, 480, 20);
             //_algorithm = new LKOpticalFlowAlgorithm(640, 480, 20);
         }
@@ -104,8 +104,9 @@ namespace RotationalMotion
             Dispatcher.Invoke(DispatcherPriority.Background, new
                 Action(() =>
                 {
-                    SourceImage.Source = result.Previous.ToImageSource();
-                    DestinationImage.Source = result.Current.ToImageSource();
+                    //SourceImage.Source = result.Previous.ToImageSource();
+                    DestinationImage.Source = result.Frame.ToImageSource();
+                    result.Frame.Dispose();
                     RxLabel.Content = string.Format("Rx: {0};", result.Rotation[0, 0].ToDegrees());
                     RyLabel.Content = string.Format("Ry: {0};", result.Rotation[1, 0].ToDegrees());
                     RzLabel.Content = string.Format("Rz: {0};", result.Rotation[2, 0].ToDegrees());

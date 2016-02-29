@@ -7,14 +7,15 @@
             <RowDefinition Height="8*"></RowDefinition>
             <RowDefinition Height="30"></RowDefinition>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
+        <!--<Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="5*"></ColumnDefinition>
                 <ColumnDefinition Width="5*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Image Grid.Column="0" x:Name="SourceImage" Margin="10"/>
             <Image Grid.Column="1" x:Name="DestinationImage" Margin="10"/>
-        </Grid>
+        </Grid>-->
+        <Image Grid.Row="0" x:Name="DestinationImage" Margin="10"/>
         <Grid Grid.Row="1" Background="DarkSlateBlue">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="6*"></ColumnDefinition>

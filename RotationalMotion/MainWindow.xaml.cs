@@ -107,15 +107,15 @@ namespace RotationalMotion
                     //SourceImage.Source = result.Previous.ToImageSource();
                     DestinationImage.Source = result.Frame.ToImageSource();
                     result.Frame.Dispose();
-                    RxLabel.Content = string.Format("Rx: {0};", result.Rotation[0, 0].ToDegrees());
-                    RyLabel.Content = string.Format("Ry: {0};", result.Rotation[1, 0].ToDegrees());
-                    RzLabel.Content = string.Format("Rz: {0};", result.Rotation[2, 0].ToDegrees());
+                    RollLabel.Content = string.Format("Roll: {0};", _processor.Roll.ToDegrees());
+                    PitchLabel.Content = string.Format("Pitch: {0};", _processor.Pitch.ToDegrees());
+                    YawingLabel.Content = string.Format("Yawing: {0};", _processor.Yawing.ToDegrees());
                 }));
         }
 
         private void OnClearButtonClick(object sender, RoutedEventArgs e)
         {
-
+            _processor.Reset();
         }       
     }
 }

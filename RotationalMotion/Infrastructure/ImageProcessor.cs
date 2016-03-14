@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,8 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using RotationalMotion.Abstract;
 using RotationalMotion.Models;
 using RotationalMotion.Utils;
+using Matrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
+
 
 namespace RotationalMotion.Infrastructure
 {
@@ -30,15 +33,24 @@ namespace RotationalMotion.Infrastructure
         private bool _stabilize = false;
         private double _sensitivity = 0.0001;
 
+        public double Roll { get; private set; }
+        public double Pitch { get; private set; }
+        public double Yawing { get; private set; }
+
 
         public ImageProcessor()
         {
-            _capture = new Capture("Kiev.mp4");
+            _capture = new Capture("1.mp4");
             //_capture = new Capture();
             _frameSource = new CaptureFrameSource(_capture);
             _stabilizer = new OnePassStabilizer(_frameSource);
 
             _rotation = DenseMatrix.OfArray(new double[,] { { 0 }, { 0 }, { 0 } });
+
+
+            Roll = 0;
+            Pitch = 0;
+            Yawing = 0;
         }
 
         public ProcessingResult NextFrame(IOpticalFlowAlgorithm optFlowCalculator)
@@ -107,7 +119,7 @@ namespace RotationalMotion.Infrastructure
             _capture.Grab();
         }
 
-        private void CalculateAngles(IEnumerable<FlowModel> flow)
+        private void CalculateAngles(List<FlowModel> flow)
         {
             double a = 0;
             double b = 0;
@@ -127,35 +139,46 @@ namespace RotationalMotion.Infrastructure
                 var x = vector.Point.X;
                 var y = vector.Point.Y;
 
-
-                a += x * x * y * y + (y * y + 1);
-                b += (x * x + 1) + x * x * y * y;
-                c += x * x + y * y;
-                d += x * y * (x * x + y * y + 2);
+                a += (x * x * y * y + (y * y + 1));
+                b += ((x * x + 1) + x * x * y * y);
+                c += (x * x + y * y);
+                d += (x * y * (x * x + y * y + 2));
                 e += y;
                 f += x;
-                k += u * x * y + v * (y * y + 1);
-                l += u * (x * x + 1) + v * x * y;
-                m += u * y - v * x;
+                k += (u * x * y + v * (y * y + 1));
+                l += (u * (x * x + 1) + v * x * y);
+                m += (u * y - v * x);
             }
 
 
-            Matrix matrix33 = DenseMatrix.OfArray(new double[,] { { a, d, f }, { d, b, e }, { f, e, c } });
+            Matrix matrix33 = DenseMatrix.OfArray(new double[,] { { a, d, f },
+                                                                  { d, b, e },
+                                                                  { f, e, c } });
+
+
             Matrix matrix31 = DenseMatrix.OfArray(new double[,] { { k }, { l }, { m } });
 
-            var result = matrix33.Inverse() * matrix31;
+            _rotation = matrix33.Inverse() * matrix31;
 
-            //_rotation[0, 0] = result[0, 0];
-            //_rotation[1, 0] = result[1, 0];
-            //_rotation[2, 0] = result[2, 0];
+            var flowX = flow.Select(_ => _.Flow.X).Sum()/flow.Count;
+            var flowY = flow.Select(_ => _.Flow.Y).Sum()/flow.Count;
 
-            //_rotation[0, 0] += result[0, 0].Abs() > _sensitivity ? result[0, 0] : 0;
-            //_rotation[1, 0] += result[1, 0].Abs() > _sensitivity ? result[1, 0] : 0;
-            //_rotation[2, 0] += result[2, 0].Abs() > _sensitivity ? result[2, 0] : 0;
+            var length = Math.Sqrt(flowX*flowX + flowY*flowY);
 
-            _rotation[0, 0] += result[0, 0];
-            _rotation[1, 0] += result[1, 0];
-            _rotation[2, 0] += result[2, 0];
+            var coefX = Math.Abs(flowX/length);
+            var coefY = Math.Abs(flowY/length);
+
+            Pitch += _rotation[2, 0]*coefY;
+            Yawing += _rotation[2, 0]*coefX;
+
+            Debug.WriteLine("flowX: {0}; flowY: {1}; length: {2}; coefX: {3}; coefY: {4}", flowX, flowY, length, coefX, coefY);
+        }
+
+        public void Reset()
+        {
+            Pitch = 0;
+            Roll = 0;
+            Yawing = 0;
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MathNet.Numerics.LinearAlgebra.Double;
+using Matrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
 namespace RotationalMotion.Models
 {

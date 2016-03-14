@@ -39,10 +39,10 @@ namespace RotationalMotion.Utils
             return result;
         }
 
-        //public static double Abs(this double val)
-        //{
-        //    return Math.Abs(val);
-        //}
+        public static double Abs(this double val)
+        {
+            return Math.Abs(val);
+        }
 
         //public static void Abs(this PointF point)
         //{
@@ -73,10 +73,12 @@ namespace RotationalMotion.Utils
 
         public static void DrawFlowVectors(this Image<Gray, byte> image, IEnumerable<FlowModel> flow)
         {
+            var coef = 3;
+
             foreach (var vector in flow)
             {
                 var from = vector.Point;
-                var to = new PointF(vector.Point.X + vector.Flow.X, vector.Point.Y + vector.Flow.Y);
+                var to = new PointF(vector.Point.X + coef*vector.Flow.X, vector.Point.Y + coef*vector.Flow.Y);
                 image.Draw(new LineSegment2DF(from,to), new Gray(1), 2);
             }
         }

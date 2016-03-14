@@ -100,6 +100,7 @@
     <Compile Include="Concrete\DualTVLOpticalFlowAlgorithm.cs" />
     <Compile Include="Concrete\FarnebackOpticalFlowAlgorithm.cs" />
     <Compile Include="Concrete\LKOpticalFlowAlgorithm.cs" />
+    <Compile Include="Models\Angles.cs" />
     <Compile Include="Models\ProcessingResult.cs" />
     <Compile Include="Utils\Extensions.cs" />
     <Page Include="MainWindow.xaml">

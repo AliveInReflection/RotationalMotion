@@ -31,7 +31,7 @@ namespace RotationalMotion.Infrastructure
         private Matrix _rotation;
 
         private bool _stabilize = false;
-        private double _sensitivity = 0.0001;
+        private double _sensitivity = 0.00001;
 
         public double Roll { get; private set; }
         public double Pitch { get; private set; }
@@ -40,7 +40,7 @@ namespace RotationalMotion.Infrastructure
 
         public ImageProcessor()
         {
-            _capture = new Capture("1.mp4");
+            _capture = new Capture("kiev.mp4");
             //_capture = new Capture();
             _frameSource = new CaptureFrameSource(_capture);
             _stabilizer = new OnePassStabilizer(_frameSource);
@@ -99,7 +99,6 @@ namespace RotationalMotion.Infrastructure
 
             return result ?? (result = new ProcessingResult()
             {
-                //Previous = _prevFrame.ToBitmap(),
                 Frame = _curFrame.ToBitmap(),
                 Rotation = _rotation
             });
@@ -121,6 +120,16 @@ namespace RotationalMotion.Infrastructure
 
         private void CalculateAngles(List<FlowModel> flow)
         {
+            var pitch = CalculateAngle(flow, Angles.Pitch);
+            Pitch += pitch.Abs() >= _sensitivity ? pitch : 0;
+
+            var yawing = CalculateAngle(flow, Angles.Yawing);
+            Yawing += yawing.Abs() >= _sensitivity ? yawing : 0;
+
+        }
+
+        private double CalculateAngle(List<FlowModel> flow, Angles angle)
+        {
             double a = 0;
             double b = 0;
             double c = 0;
@@ -133,8 +142,8 @@ namespace RotationalMotion.Infrastructure
 
             foreach (var vector in flow)
             {
-                var u = vector.Flow.X;
-                var v = vector.Flow.Y;
+                var u = angle == Angles.Yawing ? vector.Flow.X : 0;
+                var v = angle == Angles.Pitch ? vector.Flow.Y : 0;
 
                 var x = vector.Point.X;
                 var y = vector.Point.Y;
@@ -158,20 +167,10 @@ namespace RotationalMotion.Infrastructure
 
             Matrix matrix31 = DenseMatrix.OfArray(new double[,] { { k }, { l }, { m } });
 
-            _rotation = matrix33.Inverse() * matrix31;
+            var rotation = matrix33.Inverse() * matrix31;
 
-            var flowX = flow.Select(_ => _.Flow.X).Sum()/flow.Count;
-            var flowY = flow.Select(_ => _.Flow.Y).Sum()/flow.Count;
 
-            var length = Math.Sqrt(flowX*flowX + flowY*flowY);
-
-            var coefX = Math.Abs(flowX/length);
-            var coefY = Math.Abs(flowY/length);
-
-            Pitch += _rotation[2, 0]*coefY;
-            Yawing += _rotation[2, 0]*coefX;
-
-            Debug.WriteLine("flowX: {0}; flowY: {1}; length: {2}; coefX: {3}; coefY: {4}", flowX, flowY, length, coefX, coefY);
+            return rotation[2, 0];
         }
 
         public void Reset()

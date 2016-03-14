@@ -39,8 +39,8 @@ namespace RotationalMotion
             _timer.Elapsed += OnTimerTick;
 
             _processor = new ImageProcessor();
-            _algorithm = new PyrLkOpticalFlowAlgorithm();
-            //_algorithm = new FarnebackOpticalFlowAlgorithm(1280, 720, 20);
+            //_algorithm = new PyrLkOpticalFlowAlgorithm();
+            _algorithm = new FarnebackOpticalFlowAlgorithm(1280, 720, 20);
             //_algorithm = new DualTVLOpticalFlowAlgorithm(640, 480, 20);
             //_algorithm = new LKOpticalFlowAlgorithm(640, 480, 20);
         }

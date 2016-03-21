@@ -73,13 +73,13 @@ namespace RotationalMotion.Utils
 
         public static void DrawFlowVectors(this Image<Gray, byte> image, IEnumerable<FlowModel> flow)
         {
-            var coef = 3;
+            var coef = 10;
 
             foreach (var vector in flow)
             {
                 var from = vector.Point;
                 var to = new PointF(vector.Point.X + coef*vector.Flow.X, vector.Point.Y + coef*vector.Flow.Y);
-                image.Draw(new LineSegment2DF(from,to), new Gray(1), 2);
+                image.Draw(new LineSegment2DF(from,to), new Gray(1), 3);
             }
         }
 

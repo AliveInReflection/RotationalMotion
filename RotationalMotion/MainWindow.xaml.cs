@@ -23,7 +23,6 @@ namespace RotationalMotion
     public partial class MainWindow : Window
     {
         private Timer _timer;
-        private string _videoPath = "test.mp4";
         private bool _started = false;
 
         private ImageProcessor _processor;
@@ -39,10 +38,8 @@ namespace RotationalMotion
             _timer.Elapsed += OnTimerTick;
 
             _processor = new ImageProcessor();
-            //_algorithm = new PyrLkOpticalFlowAlgorithm();
-            _algorithm = new FarnebackOpticalFlowAlgorithm(1280, 720, 20);
-            //_algorithm = new DualTVLOpticalFlowAlgorithm(640, 480, 20);
-            //_algorithm = new LKOpticalFlowAlgorithm(640, 480, 20);
+            _algorithm = _algorithm = new PyrLkOpticalFlowAlgorithm();
+
         }
 
         
@@ -56,21 +53,27 @@ namespace RotationalMotion
         private void OnCaptureTypeChanged(object sender, SelectionChangedEventArgs e)
         {
             var combobox = (ComboBox)sender;
-            _timer.Stop();
-            _started = false;
 
-            var selectedValue = combobox.SelectedValue.ToString().Split().Last();
+            var wasRan = _started;
+
+            if (_started)
+            {
+                _timer.Stop();
+                _started = false;
+            }
+
+            var selectedValue = combobox.SelectedItem.ToString().Split().Last();
 
             switch (selectedValue)
             {
                 case "Camera":
                     {
-                        
+                        _processor.ChangeCapture();
                         break;
                     }
                 case "Video":
                     {
-
+                        _processor.ChangeCapture("kiev.mp4");
                         break;
                     }
                 default:
@@ -78,14 +81,27 @@ namespace RotationalMotion
                         throw new Exception("Wrong capture source selected");
                     }
             }
+
+            if (wasRan)
+            {
+                _timer.Start();
+            }
         }
 
         private void OnStartButtonClick(object sender, RoutedEventArgs e)
         {
+            var button = (Button) sender;
             if (!_started)
             {
                 _started = true;
                 _timer.Start();
+                button.Content = "Stop";
+            }
+            else
+            {
+                _started = false;
+                _timer.Stop();
+                button.Content = "Resume";
             }
         }
 
@@ -104,7 +120,6 @@ namespace RotationalMotion
             Dispatcher.Invoke(DispatcherPriority.Background, new
                 Action(() =>
                 {
-                    //SourceImage.Source = result.Previous.ToImageSource();
                     DestinationImage.Source = result.Frame.ToImageSource();
                     result.Frame.Dispose();
                     RollLabel.Content = string.Format("Roll: {0};", _processor.Roll.ToDegrees());
@@ -116,6 +131,48 @@ namespace RotationalMotion
         private void OnClearButtonClick(object sender, RoutedEventArgs e)
         {
             _processor.Reset();
-        }       
+        }
+
+
+        private void OnAlgorithmChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var combobox = (ComboBox)sender;
+
+            var wasRan = _started;
+
+            if (_started)
+            {
+                _timer.Stop();
+            }
+
+            var selectedValue = combobox.SelectedItem.ToString().Split().Last();
+
+            switch (selectedValue)
+            {
+                case "PyrLK":
+                    {
+                        _algorithm = _algorithm = new PyrLkOpticalFlowAlgorithm();
+                        break;
+                    }
+                case "Farneback":
+                    {
+                        _algorithm = new FarnebackOpticalFlowAlgorithm(_processor.Width, _processor.Height, 20);
+                        break;
+                    }
+                default:
+                    {
+                        throw new Exception("Wrong capture source selected");
+                    }
+
+                    //
+                    //_algorithm = new DualTVLOpticalFlowAlgorithm(640, 480, 20);
+                    //_algorithm = new LKOpticalFlowAlgorithm(640, 480, 20);
+            }
+
+            if (wasRan)
+            {
+                _timer.Start();
+            }
+        }
     }
 }

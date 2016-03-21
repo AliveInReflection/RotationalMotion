@@ -37,6 +37,10 @@ namespace RotationalMotion.Infrastructure
         public double Pitch { get; private set; }
         public double Yawing { get; private set; }
 
+        public int Width => _capture.Width;
+
+        public int Height => _capture.Height;
+
 
         public ImageProcessor()
         {
@@ -71,7 +75,11 @@ namespace RotationalMotion.Infrastructure
                 try
                 {
                     var optFlow = optFlowCalculator.CalculateFlow(_prevFrame, _curFrame).ToList();
+
+                    var genearalFlow = CalculateGeneralFlow(optFlow);
+
                     CalculateAngles(optFlow);
+
 
                     var curFrame = _curFrame.Clone();
                     curFrame.DrawFlowVectors(optFlow);
@@ -120,12 +128,89 @@ namespace RotationalMotion.Infrastructure
 
         private void CalculateAngles(List<FlowModel> flow)
         {
-            var pitch = CalculateAngle(flow, Angles.Pitch);
+            var topFlow = flow.Where(m => m.Point.Y <= _capture.Height / 2).ToList();
+            var bottomFlow = flow.Where(m => m.Point.Y > _capture.Height/2). ToList();
+            var leftFlow = flow.Where(m => m.Point.X <= _capture.Width/2).ToList();
+            var rightFlow = flow.Where(m => m.Point.X > _capture.Width/2).ToList();
+
+            var topPitch = CalculateAngle(topFlow, Angles.Pitch);
+            var bottomPitch = CalculateAngle(bottomFlow, Angles.Pitch);
+            var leftPitch = CalculateAngle(leftFlow, Angles.Pitch);
+            var rightPitch = CalculateAngle(rightFlow, Angles.Pitch);
+
+            var topYawing = CalculateAngle(topFlow, Angles.Yawing);
+            var bottomYawing = CalculateAngle(bottomFlow, Angles.Yawing);
+            var leftYawing = CalculateAngle(leftFlow, Angles.Yawing);
+            var rightYawing = CalculateAngle(rightFlow, Angles.Yawing);
+
+
+
+
+
+            var pitch = (((topPitch + bottomPitch) / 2) + ((leftPitch + rightPitch)/2))/2;
             Pitch += pitch.Abs() >= _sensitivity ? pitch : 0;
 
-            var yawing = CalculateAngle(flow, Angles.Yawing);
+            var yawing = (((topYawing + bottomYawing) / 2) + ((leftYawing + rightYawing)/2))/2;
             Yawing += yawing.Abs() >= _sensitivity ? yawing : 0;
 
+        }
+
+        public IEnumerable<FlowModel> CalculateGeneralFlow(List<FlowModel> flow)
+        {
+            var topFlow = flow.Where(m => m.Point.Y <= _capture.Height / 2).ToList();
+            var bottomFlow = flow.Where(m => m.Point.Y > _capture.Height / 2).ToList();
+            var leftFlow = flow.Where(m => m.Point.X <= _capture.Width / 2).ToList();
+            var rightFlow = flow.Where(m => m.Point.X > _capture.Width / 2).ToList();
+
+            var list = new List<FlowModel>();
+            list.Add(new FlowModel()
+            {
+                Point = new PointF(_capture.Width / 2, _capture.Height / 4),
+                Flow = new PointF(topFlow.Sum(m => m.Flow.X) / topFlow.Count, 0)
+            });
+            list.Add(new FlowModel()
+            {
+                Point = new PointF(_capture.Width / 2, _capture.Height / 4),
+                Flow = new PointF(0, topFlow.Sum(m => m.Flow.Y) / topFlow.Count)
+            });
+
+
+            list.Add(new FlowModel()
+            {
+                Point = new PointF(_capture.Width / 2, _capture.Height / 4 * 3),
+                Flow = new PointF(bottomFlow.Sum(m => m.Flow.X) / bottomFlow.Count, 0)
+            });
+            list.Add(new FlowModel()
+            {
+                Point = new PointF(_capture.Width / 2, _capture.Height / 4 * 3),
+                Flow = new PointF(0, bottomFlow.Sum(m => m.Flow.Y) / bottomFlow.Count)
+            });
+
+
+            list.Add(new FlowModel()
+            {
+                Point = new PointF(_capture.Width / 4, _capture.Height / 2),
+                Flow = new PointF(leftFlow.Sum(m => m.Flow.X) / leftFlow.Count, 0)
+            });
+            list.Add(new FlowModel()
+            {
+                Point = new PointF(_capture.Width / 4, _capture.Height / 2),
+                Flow = new PointF(0, leftFlow.Sum(m => m.Flow.Y) / leftFlow.Count)
+            });
+
+
+            list.Add(new FlowModel()
+            {
+                Point = new PointF(_capture.Width / 4 * 3, _capture.Height / 2),
+                Flow = new PointF(rightFlow.Sum(m => m.Flow.X) / rightFlow.Count, 0)
+            });
+            list.Add(new FlowModel()
+            {
+                Point = new PointF(_capture.Width / 4 * 3, _capture.Height / 2),
+                Flow = new PointF(0, rightFlow.Sum(m => m.Flow.Y) / rightFlow.Count)
+            });
+
+            return list;
         }
 
         private double CalculateAngle(List<FlowModel> flow, Angles angle)

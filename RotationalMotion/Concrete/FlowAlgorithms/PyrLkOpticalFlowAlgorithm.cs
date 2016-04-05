@@ -17,7 +17,7 @@ namespace RotationalMotion.Concrete
         {
             var prevFeatures = prev.GoodFeaturesToTrack(500, 0.01d, 0.01d, 10);
             PointF[] currFeatures;
-            var criteria = new MCvTermCriteria(300, 0.01);
+            var criteria = new MCvTermCriteria(100, 0.001);
             byte[] status;
             float[] error;
 
@@ -32,11 +32,6 @@ namespace RotationalMotion.Concrete
             {
                 if (status[i] == 1 && currFeatures[i].X <= width && currFeatures[i].Y <= height)
                 {
-                    if (currFeatures[i].X < 0 || currFeatures[i].Y < 0)
-                    {
-                        Debug.WriteLine(currFeatures[i].X);
-                    }
-
                     result.Add(new FlowModel()
                     {
                         Point = prevFeatures[0][i],

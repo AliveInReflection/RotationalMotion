@@ -97,10 +97,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Concrete\DualTVLOpticalFlowAlgorithm.cs" />
-    <Compile Include="Concrete\FarnebackOpticalFlowAlgorithm.cs" />
-    <Compile Include="Concrete\LKOpticalFlowAlgorithm.cs" />
+    <Compile Include="Abstract\IRotationalMotionEstimator.cs" />
+    <Compile Include="Concrete\Estimators\SimpleEstimator.cs" />
+    <Compile Include="Concrete\FlowAlgorithms\DualTVLOpticalFlowAlgorithm.cs" />
+    <Compile Include="Concrete\FlowAlgorithms\FarnebackOpticalFlowAlgorithm.cs" />
+    <Compile Include="Concrete\FlowAlgorithms\LKOpticalFlowAlgorithm.cs" />
     <Compile Include="Models\Angles.cs" />
+    <Compile Include="Models\AngularPositionModel.cs" />
+    <Compile Include="Models\OpticalFlowModel.cs" />
     <Compile Include="Models\ProcessingResult.cs" />
     <Compile Include="Utils\Extensions.cs" />
     <Page Include="MainWindow.xaml">
@@ -112,7 +116,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Concrete\PyrLkOpticalFlowAlgorithm.cs" />
+    <Compile Include="Concrete\FlowAlgorithms\PyrLkOpticalFlowAlgorithm.cs" />
     <Compile Include="Infrastructure\ImageProcessor.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

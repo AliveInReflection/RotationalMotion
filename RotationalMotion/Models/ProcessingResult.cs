@@ -11,6 +11,7 @@ namespace RotationalMotion.Models
     public class ProcessingResult
     {
         public Bitmap Frame { get; set; }
-        public Matrix Rotation { get; set; }
+
+        public AngularPositionModel AngularPosition { get; set; }
     }
 }

@@ -17,7 +17,7 @@ namespace RotationalMotion.Utils
     {
         public static PointF Sub(this PointF left, PointF right)
         {
-            return new PointF(left.X - right.X, left.Y - right.Y);
+            return new PointF(right.X - left.X, right.Y - left.Y);
         }
 
         public static IEnumerable<FlowModel> Combine(this Image<Gray, float> flowX, Image<Gray, float> flowY, int step)
@@ -44,12 +44,6 @@ namespace RotationalMotion.Utils
             return Math.Abs(val);
         }
 
-        //public static void Abs(this PointF point)
-        //{
-        //    point.X = Math.Abs(point.X);
-        //    point.Y = Math.Abs(point.Y);
-        //}
-
         public static double ToDegrees(this double val)
         {
             return Math.Round(val * 180 / Math.PI, 5);
@@ -73,7 +67,7 @@ namespace RotationalMotion.Utils
 
         public static void DrawFlowVectors(this Image<Gray, byte> image, IEnumerable<FlowModel> flow)
         {
-            var coef = 10;
+            var coef = 3;
 
             foreach (var vector in flow)
             {

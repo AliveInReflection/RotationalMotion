@@ -1,7 +1,7 @@
 ﻿<Window x:Class="RotationalMotion.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="500" Width="600">
+        Title="Rotational motion" Height="500" Width="600">
     <Grid Background="AliceBlue">
         <Grid.RowDefinitions>
             <RowDefinition Height="8*"></RowDefinition>
@@ -12,9 +12,9 @@
         <Image Grid.Row="0" x:Name="DestinationImage" Margin="10"/>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Label x:Name="RollLabel">Roll: N/A</Label>
-            <Label x:Name="PitchLabel">Pitch: N/A</Label>
-            <Label x:Name="YawingLabel">Yawing: N/A</Label>
+            <Label x:Name="RollLabel" FontSize="15" FontWeight="Bold" Foreground="#555">Roll: N/A</Label>
+            <Label x:Name="PitchLabel" FontSize="15" FontWeight="Bold" Foreground="#555">Pitch: N/A</Label>
+            <Label x:Name="YawingLabel" FontSize="15" FontWeight="Bold" Foreground="#555">Yawing: N/A</Label>
         </StackPanel>
 
         <Grid Grid.Row="2" Background="#444">

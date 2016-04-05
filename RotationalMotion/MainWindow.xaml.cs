@@ -4,15 +4,11 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using Emgu.CV;
-using Emgu.CV.Structure;
-using MathNet.Numerics.LinearAlgebra.Double;
 using RotationalMotion.Abstract;
 using RotationalMotion.Concrete;
 using RotationalMotion.Infrastructure;
 using RotationalMotion.Models;
 using RotationalMotion.Utils;
-using Matrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
 
 namespace RotationalMotion
@@ -28,7 +24,7 @@ namespace RotationalMotion
         private ImageProcessor _processor;
         private IOpticalFlowAlgorithm _algorithm;
 
-        private int _videoRate = 15;
+        private int _videoRate = 30;
 
         public MainWindow()
         {
@@ -73,7 +69,7 @@ namespace RotationalMotion
                     }
                 case "Video":
                     {
-                        _processor.ChangeCapture("kiev.mp4");
+                        _processor.ChangeCapture("roll.mp4");
                         break;
                     }
                 default:
@@ -164,9 +160,6 @@ namespace RotationalMotion
                         throw new Exception("Wrong capture source selected");
                     }
 
-                    //
-                    //_algorithm = new DualTVLOpticalFlowAlgorithm(640, 480, 20);
-                    //_algorithm = new LKOpticalFlowAlgorithm(640, 480, 20);
             }
 
             if (wasRan)

@@ -20,135 +20,124 @@ using Matrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
 namespace RotationalMotion.Infrastructure
 {
-    public class ImageProcessor
-    {
-        private Capture _capture;
-        private FrameSource _frameSource;
-        private OnePassStabilizer _stabilizer;
+	public class ImageProcessor
+	{
+		private IRotationalMotionEstimator _estimator;
+		private Capture _capture;
 
-        private Image<Gray, byte> _curFrame;
-        private Image<Gray, byte> _prevFrame;
+		private Image<Gray, byte> _curFrame;
+		private Image<Gray, byte> _prevFrame;
 
-        private Matrix _rotation;
-
-        private bool _stabilize = false;
-        private double _sensitivity = 0.00001;
-
-        private IRotationalMotionEstimator _estimator;
-
-        #region properties
-
-        public double Roll { get; private set; }
-        public double Pitch { get; private set; }
-        public double Yawing { get; private set; }
-
-        public int Width => _capture.Width;
-
-        public int Height => _capture.Height;
-
-        #endregion
+		public event EventHandler FileEndRiched;
 
 
-        public ImageProcessor()
-        {
-            _capture = new Capture();
-            _rotation = DenseMatrix.OfArray(new double[,] { { 0 }, { 0 }, { 0 } });
-            _estimator = new SimpleEstimator();
+		#region properties
+
+		public double Roll { get; private set; }
+		public double Pitch { get; private set; }
+		public double Yawing { get; private set; }
+
+		public int Width => _capture.Width;
+
+		public int Height => _capture.Height;
+
+		#endregion
+
+		public ImageProcessor()
+		{
+			_capture = new Capture();
+			_estimator = new IntagrationEstimator();
+		}
+
+		public ProcessingResult NextFrame(IOpticalFlowAlgorithm optFlowCalculator)
+		{
+			ProcessingResult result = null;
+			try
+			{
+				if (_capture.Grab())
+				{
+					_curFrame = _capture.RetrieveGrayFrame();
+				}
+
+				if (_prevFrame?.Data != null && _curFrame?.Data != null)
+				{
+					var optFlow = optFlowCalculator.CalculateFlow(_prevFrame, _curFrame).ToList();
 
 
-            Roll = 0;
-            Pitch = 0;
-            Yawing = 0;
-        }
+					var curFrame = _curFrame.Clone();
+					curFrame.DrawFlowVectors(optFlow);
 
-        public ProcessingResult NextFrame(IOpticalFlowAlgorithm optFlowCalculator)
-        {
-            ProcessingResult result = null;
+					var flowModel = new OpticalFlowModel(optFlow, Width, Height);
 
-            try
-            {
-                _curFrame = _capture.QueryGrayFrame();
-            }
-            catch (AccessViolationException e)
-            {
+					var angularPosition = _estimator.Estimate(flowModel);
+					result = new ProcessingResult(curFrame.ToBitmap(), angularPosition);
+					curFrame.Dispose();
+				}
+			}
+			catch (AggregateException e)
+			{
+				
+			}
+			catch (AccessViolationException e)
+			{
+				RiseFileEndRiched();
+			}
+			catch (Exception e)
+			{
 
-            }
+			}
+			catch
+			{
+				
+			}
 
-            if (_prevFrame != null && _prevFrame.Data != null && _curFrame != null && _curFrame.Data != null)
-            {
-                try
-                {
-                    var optFlow = optFlowCalculator.CalculateFlow(_prevFrame, _curFrame).ToList();
-                    CalculateRotation(optFlow);
+			_prevFrame?.Dispose();
+			if (_curFrame != null)
+			{
+				_prevFrame = _curFrame.Clone();
+			}
 
-                    var curFrame = _curFrame.Clone();
-                    curFrame.DrawFlowVectors(optFlow);
+			if (result == null)
+			{
+				result = new ProcessingResult(_curFrame.ToBitmap(), null);
+			}
 
-                    result = new ProcessingResult()
-                    {
-                        Frame = curFrame.ToBitmap(),
-                    };
+			return result;
+		}
 
-                    curFrame.Dispose();
-                }
-                catch (Exception e)
-                {
+		#region change
+		public void ChangeCapture(int device = 0)
+		{
+			_capture.Dispose();
+			_capture = new Capture(device);
+			_capture.Grab();
+		}
 
-                }
-            }
+		public void ChangeCapture(string filePath)
+		{
+			_capture.Dispose();
+			_capture = new Capture(filePath);
+			_capture.Grab();
+		}
 
-            if (_prevFrame != null)
-            {
-                _prevFrame.Dispose();
-            }
-            _prevFrame = _curFrame.Clone();
+		public void Reset()
+		{
+			Pitch = 0;
+			Roll = 0;
+			Yawing = 0;
+		}
+		#endregion
 
+		#region privates
 
-            return result ?? (result = new ProcessingResult()
-            {
-                Frame = _curFrame.ToBitmap()
-            });
-        }
+		public void RiseFileEndRiched()
+		{
+			if (FileEndRiched != null)
+			{
+				RiseFileEndRiched();
+			}
+		}
 
-        #region change
-        public void ChangeCapture(int device = 0)
-        {
-            _capture.Dispose();
-            _capture = new Capture(device);
-            _capture.Grab();
-        }
-
-        public void ChangeCapture(string filePath)
-        {
-            _capture.Dispose();
-            _capture = new Capture(filePath);
-            _capture.Grab();
-        }
-
-        public void Reset()
-        {
-            Pitch = 0;
-            Roll = 0;
-            Yawing = 0;
-        }
-        #endregion
-
-        #region privates
-
-        private void CalculateRotation(IEnumerable<FlowModel> flow)
-        {
-            var motion = _estimator.Estimate(new OpticalFlowModel()
-            {
-                Flow = flow,
-                Width = _capture.Width,
-                Height = _capture.Height
-            });
-
-            Pitch += motion.Pitch;
-            Roll += motion.Roll;
-            Yawing += Yawing;
-        }
-
-        #endregion
-    }
+		#endregion
+	}
 }

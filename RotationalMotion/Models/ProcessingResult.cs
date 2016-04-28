@@ -8,10 +8,21 @@ using Matrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
 namespace RotationalMotion.Models
 {
-    public class ProcessingResult
-    {
-        public Bitmap Frame { get; set; }
+	public class ProcessingResult
+	{
+		public ProcessingResult()
+		{
+			
+		}
 
-        public AngularPositionModel AngularPosition { get; set; }
-    }
+		public ProcessingResult(Bitmap frame, AngularPositionModel angularPosition)
+		{
+			Frame = frame;
+			AngularPosition = angularPosition;
+		}
+
+		public Bitmap Frame { get; set; }
+
+		public AngularPositionModel AngularPosition { get; set; }
+	}
 }

@@ -6,12 +6,24 @@ using System.Threading.Tasks;
 
 namespace RotationalMotion.Models
 {
-    public class OpticalFlowModel
-    { 
-        public IEnumerable<FlowModel> Flow { get; set; }
+	public class OpticalFlowModel
+	{
+		public OpticalFlowModel()
+		{
+			
+		}
 
-        public int Width { get; set; }
+		public OpticalFlowModel(IEnumerable<FlowModel> flow, int width, int height)
+		{
+			Flow = flow;
+			Width = width;
+			Height = height;
+		}
 
-        public int Height { get; set; }
-    }
+		public IEnumerable<FlowModel> Flow { get; set; }
+
+		public int Width { get; set; }
+
+		public int Height { get; set; }
+	}
 }

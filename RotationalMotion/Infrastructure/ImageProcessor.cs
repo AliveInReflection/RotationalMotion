@@ -46,7 +46,7 @@ namespace RotationalMotion.Infrastructure
 		public ImageProcessor()
 		{
 			_capture = new Capture();
-			_estimator = new IntagrationEstimator();
+			_estimator = new DistributedFlowEstimator();
 		}
 
 		public ProcessingResult NextFrame(IOpticalFlowAlgorithm optFlowCalculator)

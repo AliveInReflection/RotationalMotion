@@ -99,6 +99,7 @@
     </ApplicationDefinition>
     <Compile Include="Abstract\IRotationalMotionEstimator.cs" />
     <Compile Include="Concrete\Estimators\IntagrationEstimator.cs" />
+    <Compile Include="Concrete\Estimators\DistributedFlowEstimator.cs" />
     <Compile Include="Concrete\Estimators\SimpleEstimator.cs" />
     <Compile Include="Concrete\FlowAlgorithms\DualTVLOpticalFlowAlgorithm.cs" />
     <Compile Include="Concrete\FlowAlgorithms\FarnebackOpticalFlowAlgorithm.cs" />

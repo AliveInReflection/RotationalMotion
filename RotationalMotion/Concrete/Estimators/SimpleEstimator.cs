@@ -30,6 +30,7 @@ namespace RotationalMotion.Concrete.Estimators
 
 		protected Matrix CalculateMatrix(OpticalFlowModel opticalFlow)
 		{
+			k = l = m = 0;
 			foreach (var vector in opticalFlow.Flow)
 			{
 				var u = vector.Flow.X;
@@ -60,7 +61,7 @@ namespace RotationalMotion.Concrete.Estimators
 			return rotation;
 		}
 
-		protected void ResolvePartOfCoefficients(OpticalFlowModel opticalFlow)
+		protected virtual void ResolvePartOfCoefficients(OpticalFlowModel opticalFlow)
 		{
 
 			if (opticalFlow.Width == 1280 && opticalFlow.Height == 720)

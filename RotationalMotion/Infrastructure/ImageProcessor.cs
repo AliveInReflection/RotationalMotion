@@ -36,6 +36,7 @@ namespace RotationalMotion.Infrastructure
 		public double Roll { get; private set; }
 		public double Pitch { get; private set; }
 		public double Yawing { get; private set; }
+		public Bitmap Image { get; private set; }
 
 		public int Width => _capture.Width;
 
@@ -49,7 +50,7 @@ namespace RotationalMotion.Infrastructure
 			_estimator = new DistributedFlowEstimator();
 		}
 
-		public ProcessingResult NextFrame(IOpticalFlowAlgorithm optFlowCalculator)
+		public void NextFrame(IOpticalFlowAlgorithm optFlowCalculator)
 		{
 			ProcessingResult result = null;
 			try
@@ -70,7 +71,14 @@ namespace RotationalMotion.Infrastructure
 					var flowModel = new OpticalFlowModel(optFlow, Width, Height);
 
 					var angularPosition = _estimator.Estimate(flowModel);
-					result = new ProcessingResult(curFrame.ToBitmap(), angularPosition);
+
+					Pitch += angularPosition.Pitch;
+					Roll += angularPosition.Roll;
+					Yawing += angularPosition.Yawing;
+
+					Image?.Dispose();
+					Image = curFrame.ToBitmap();
+
 					curFrame.Dispose();
 				}
 			}
@@ -96,13 +104,6 @@ namespace RotationalMotion.Infrastructure
 			{
 				_prevFrame = _curFrame.Clone();
 			}
-
-			if (result == null)
-			{
-				result = new ProcessingResult(_curFrame.ToBitmap(), null);
-			}
-
-			return result;
 		}
 
 		#region change

@@ -43,8 +43,8 @@ namespace RotationalMotion
 
 		public void OnTimerTick(object sender, EventArgs args)
 		{
-			var result = _processor.NextFrame(_algorithm);
-			Show(result);
+			_processor.NextFrame(_algorithm);
+			Show();
 		}
 
 		private void OnCaptureTypeChanged(object sender, SelectionChangedEventArgs e)
@@ -70,7 +70,7 @@ namespace RotationalMotion
 					}
 				case "Video":
 					{
-						_processor.ChangeCapture("roll.mp4");
+						_processor.ChangeCapture("kiev.mp4");
 						break;
 					}
 				default:
@@ -111,20 +111,17 @@ namespace RotationalMotion
 			}
 		}
 
-		private void Show(ProcessingResult result)
+		private void Show()
 		{
 
 			Dispatcher.Invoke(DispatcherPriority.Background, new
 				Action(() =>
 				{
-					DestinationImage.Source = result.Frame.ToImageSource();
-					result.Frame.Dispose();
-					if (result.AngularPosition != null)
-					{
-						RollLabel.Content = string.Format("Roll: {0};", result.AngularPosition.Roll.ToDegrees());
-						PitchLabel.Content = string.Format("Pitch: {0};", result.AngularPosition.Pitch.ToDegrees());
-						YawingLabel.Content = string.Format("Yawing: {0};", result.AngularPosition.Yawing.ToDegrees());
-					}
+					DestinationImage.Source = _processor.Image?.ToImageSource();
+
+					RollLabel.Content = string.Format("Roll: {0};", _processor.Roll.ToDegrees());
+					PitchLabel.Content = string.Format("Pitch: {0};", _processor.Pitch.ToDegrees());
+					YawingLabel.Content = string.Format("Yawing: {0};", _processor.Yawing.ToDegrees());
 				}));
 		}
 

@@ -76,6 +76,18 @@
       <HintPath>..\packages\MathNet.Numerics.3.10.0\lib\net40\MathNet.Numerics.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="OxyPlot, Version=1.0.0.0, Culture=neutral, PublicKeyToken=638079a8f0bd61e9, processorArchitecture=MSIL">
+      <HintPath>..\packages\OxyPlot.Core.1.0.0-unstable2100\lib\net45\OxyPlot.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OxyPlot.Wpf, Version=1.0.0.0, Culture=neutral, PublicKeyToken=75e952ba404cdbb0, processorArchitecture=MSIL">
+      <HintPath>..\packages\OxyPlot.Wpf.1.0.0-unstable2100\lib\net45\OxyPlot.Wpf.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OxyPlot.Xps, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OxyPlot.Wpf.1.0.0-unstable2100\lib\net45\OxyPlot.Xps.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -100,6 +112,7 @@
     <Compile Include="Abstract\IRotationalMotionEstimator.cs" />
     <Compile Include="Concrete\Estimators\IntagrationEstimator.cs" />
     <Compile Include="Concrete\Estimators\DistributedFlowEstimator.cs" />
+    <Compile Include="Concrete\Estimators\ManualEstimator.cs" />
     <Compile Include="Concrete\Estimators\SimpleEstimator.cs" />
     <Compile Include="Concrete\FlowAlgorithms\DualTVLOpticalFlowAlgorithm.cs" />
     <Compile Include="Concrete\FlowAlgorithms\FarnebackOpticalFlowAlgorithm.cs" />

@@ -14,7 +14,7 @@ namespace RotationalMotion.Concrete.Estimators
 		public virtual AngularPositionModel Estimate(OpticalFlowModel opticalFlow)
 		{
 
-			ResolvePartOfCoefficients(opticalFlow);
+			//ResolvePartOfCoefficients(opticalFlow);
 
 			var rotation = CalculateMatrix(opticalFlow);
 
@@ -28,28 +28,33 @@ namespace RotationalMotion.Concrete.Estimators
 			return result;
 		}
 
-		protected Matrix CalculateMatrix(OpticalFlowModel opticalFlow)
+		protected virtual Matrix CalculateMatrix(OpticalFlowModel opticalFlow)
 		{
-			k = l = m = 0;
+			k = l = m = a = b = c = d = e = f = 0;
 			foreach (var vector in opticalFlow.Flow)
 			{
 				var u = vector.Flow.X;
-				var v = vector.Flow.Y;
+				var v = - vector.Flow.Y;
 
 				var x = vector.Point.X;
-				var y = vector.Point.Y;
+				var y = opticalFlow.Height - vector.Point.Y;
+
+				a += (x * x * y * y + (y * y + 1) * (y * y + 1));
+				b += ((x * x + 1) * (x * x + 1) + x * x * y * y);
+				c += (x * x + y * y);
+				d -= (x * y * (x * x + y * y + 2));
+				e -= y;
+				f -= x;
 
 
 				k += (u * x * y + v * (y * y + 1));
-				l += (u * (x * x + 1) + v * x * y);
+				l -= (u * (x * x + 1) + v * x * y);
 				m += (u * y - v * x);
 			}
 
-			d = -d;
-			e = -e;
-			f = -f;
-			l = -l;
-
+			//Matrix matrix33 = DenseMatrix.OfArray(new double[,] { { f, d, a },
+			//													  { e, b, d },
+			//													  { c, e, f } });
 			Matrix matrix33 = DenseMatrix.OfArray(new double[,] { { a, d, f },
 																  { d, b, e },
 																  { f, e, c } });
@@ -68,10 +73,19 @@ namespace RotationalMotion.Concrete.Estimators
 			{
 				a = 42081547840512;
 				b = 33176187759616;
-				c = 661647667200;
-				d = 29762523293696;
-				e = 331315200;
-				f = 589363200;
+				c = 66164766720000;
+				d = -29762523293696;
+				e = -331315200;
+				f = -589363200;
+			}
+			else if (opticalFlow.Width == 800 && opticalFlow.Height == 600)
+			{
+				a = 92585546335538;
+				b = 87337458639829;
+				c = 36822347864300;
+				d = -87278472889012;
+				e = -366879328;
+				f = -441940593;
 			}
 			else
 			{

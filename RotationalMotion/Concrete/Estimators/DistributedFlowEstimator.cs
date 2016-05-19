@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using RotationalMotion.Abstract;
 using RotationalMotion.Models;
 
@@ -20,15 +18,19 @@ namespace RotationalMotion.Concrete.Estimators
 				Flow = GetDistributedFlow(opticalFlow)
 			};
 
-			ResolvePartOfCoefficients(distributedFlow);
+			var rotation = CalculateMatrix(opticalFlow);
 
-			var rotation = CalculateMatrix(distributedFlow);
+			var flowArray = distributedFlow.Flow.ToArray();
+
+			var pitch = Math.Abs(rotation[2, 0]);
+			var roll = Math.Abs(rotation[0, 0]) * 1100;
+			var yawing = -Math.Abs(rotation[1, 0]) * 1000;
 
 			var result = new AngularPositionModel
 			{
-				Pitch = rotation[2, 0],
-				Roll = rotation[0, 0],
-				Yawing = rotation[1, 0]
+				Roll = HasPositiveRoll(flowArray) ? roll : HasNegativeRoll(flowArray) ? -roll : 0,
+				Yawing = HasPositiveYawing(flowArray) ? yawing : HasNegativeYawing(flowArray) ? -yawing : 0,
+				Pitch = HasPositivePitch(flowArray) ? pitch : HasNegativePitch(flowArray) ? -pitch : 0
 			};
 
 			return result;
@@ -42,23 +44,105 @@ namespace RotationalMotion.Concrete.Estimators
 			var leftFlow = opticalFlow.Flow.Where(v => v.Point.X < opticalFlow.Width / 2);
 			var rightFlow = opticalFlow.Flow.Where(v => v.Point.X > opticalFlow.Width / 2);
 
-			var leftX = opticalFlow.Width/4;
-			var midX = opticalFlow.Width/2;
-			var rightX = opticalFlow.Width/4*3;
-			var topY = (int) (opticalFlow.Width/4*3);
-			var midY = (int) (opticalFlow.Width/2);
-			var bottomY = (int) (opticalFlow.Width/4);
+			var leftTopFlow = opticalFlow.Flow.Where(v => v.Point.Y < opticalFlow.Height/2 && v.Point.X < opticalFlow.Width/2);
+			var rightTopFlow = opticalFlow.Flow.Where(v => v.Point.Y < opticalFlow.Height/2 && v.Point.X > opticalFlow.Width/2);
+			var leftBottomFlow = opticalFlow.Flow.Where(v => v.Point.Y > opticalFlow.Height/2 && v.Point.X < opticalFlow.Width/2);
+			var rightBottompFlow = opticalFlow.Flow.Where(v => v.Point.Y > opticalFlow.Height/2 && v.Point.X > opticalFlow.Width/2);
+
+			var low = opticalFlow.Height/4;
+			var mid = opticalFlow.Height / 2;
+			var high = opticalFlow.Height / 4*3;
 
 			var result = new List<FlowModel>
 			{
-				GetSuperposition(topFlow, new PointF(midX, topY)),
-				GetSuperposition(bottomFlow, new PointF(midX, bottomY)),
-				GetSuperposition(leftFlow, new PointF(leftX, midX)),
-				GetSuperposition(rightFlow, new PointF(rightX, midY))
+				GetSuperposition(topFlow, new PointF(mid, low)),
+				GetSuperposition(bottomFlow, new PointF(mid, high)),
+				GetSuperposition(leftFlow, new PointF(low, mid)),
+				GetSuperposition(rightFlow, new PointF(high, mid)),
+
+				GetSuperposition(leftTopFlow, new PointF(low, low)),
+				GetSuperposition(rightTopFlow, new PointF(high, low)),
+				GetSuperposition(leftBottomFlow, new PointF(low, high)),
+				GetSuperposition(rightBottompFlow, new PointF(high, high))
 			};
-
-
+			
 			return result;
+		}
+
+		private bool HasPositiveRoll(FlowModel[] flow)
+		{
+			var hasRoll1 = (flow[4].Flow.X > 0 && flow[4].Flow.Y < 0 && flow[7].Flow.X < 0 && flow[7].Flow.Y > 0);
+			var hasRoll2 = (flow[5].Flow.X > 0 && flow[5].Flow.Y > 0 && flow[6].Flow.X < 0 && flow[6].Flow.Y < 0);
+
+			var hasRoll3 = (flow[4].Flow.X > 0 && flow[4].Flow.Y < 0 && flow[5].Flow.X > 0 && flow[5].Flow.Y > 0);
+			var hasRoll4 = (flow[5].Flow.X > 0 && flow[5].Flow.Y > 0 && flow[7].Flow.X < 0 && flow[7].Flow.Y > 0);
+			var hasRoll5 = (flow[7].Flow.X < 0 && flow[7].Flow.Y > 0 && flow[6].Flow.X < 0 && flow[6].Flow.Y < 0);
+			var hasRoll6 = (flow[6].Flow.X < 0 && flow[6].Flow.Y < 0 && flow[4].Flow.X > 0 && flow[4].Flow.Y < 0);
+
+			var hasRoll7 = (flow[0].Flow.X > 0 && flow[1].Flow.X < 0);
+			var hasRoll8 = (flow[2].Flow.Y < 0 && flow[3].Flow.Y > 0);
+
+			return hasRoll1 || hasRoll2 || hasRoll3 || hasRoll4 || hasRoll5 || hasRoll6 || hasRoll7 || hasRoll8;
+		}
+
+		private bool HasNegativeRoll(FlowModel[] flow)
+		{
+			var hasRoll1 = (flow[4].Flow.X < 0 && flow[4].Flow.Y > 0 && flow[7].Flow.X > 0 && flow[7].Flow.Y < 0);
+			var hasRoll2 = (flow[5].Flow.X < 0 && flow[5].Flow.Y < 0 && flow[6].Flow.X > 0 && flow[6].Flow.Y > 0);
+
+			var hasRoll3 = (flow[4].Flow.X < 0 && flow[4].Flow.Y > 0 && flow[5].Flow.X < 0 && flow[5].Flow.Y < 0);
+			var hasRoll4 = (flow[5].Flow.X < 0 && flow[5].Flow.Y < 0 && flow[7].Flow.X > 0 && flow[7].Flow.Y < 0);
+			var hasRoll5 = (flow[7].Flow.X > 0 && flow[7].Flow.Y < 0 && flow[6].Flow.X > 0 && flow[6].Flow.Y > 0);
+			var hasRoll6 = (flow[6].Flow.X > 0 && flow[6].Flow.Y > 0 && flow[4].Flow.X < 0 && flow[4].Flow.Y > 0);
+
+			var hasRoll7 = (flow[0].Flow.X < 0 && flow[1].Flow.X > 0);
+			var hasRoll8 = (flow[2].Flow.Y > 0 && flow[3].Flow.Y < 0);
+
+			return hasRoll1 || hasRoll2 || hasRoll3 || hasRoll4 || hasRoll5 || hasRoll6 || hasRoll7 || hasRoll8;
+		}
+
+		private bool HasPositivePitch(FlowModel[] flow)
+		{
+			var hasPitch1 = (flow[4].Flow.Y > 0 && flow[6].Flow.Y > 0);
+			var hasPitch2 = (flow[5].Flow.Y > 0 && flow[7].Flow.Y > 0);
+			var hasPitch3 = (flow[0].Flow.Y > 0 && flow[1].Flow.Y > 0);
+
+			var hasRoll = HasPositiveRoll(flow) || HasNegativeRoll(flow);
+
+			return (hasPitch1 || hasPitch2 || hasPitch3) && !hasRoll;
+		}
+
+		private bool HasNegativePitch(FlowModel[] flow)
+		{
+			var hasPitch1 = (flow[4].Flow.Y < 0 && flow[6].Flow.Y < 0);
+			var hasPitch2 = (flow[5].Flow.Y < 0 && flow[7].Flow.Y < 0);
+			var hasPitch3 = (flow[0].Flow.Y < 0 && flow[1].Flow.Y < 0);
+
+			var hasRoll = HasPositiveRoll(flow) || HasNegativeRoll(flow);
+
+			return (hasPitch1 || hasPitch2 || hasPitch3) && !hasRoll;
+		}
+
+		private bool HasPositiveYawing(FlowModel[] flow)
+		{
+			var hasYawing1 = (flow[4].Flow.X > 0 && flow[6].Flow.X > 0);
+			var hasYawing2 = (flow[5].Flow.X > 0 && flow[7].Flow.X > 0);
+			var hasYawing3 = (flow[0].Flow.X > 0 && flow[1].Flow.X > 0);
+
+			var hasRoll = HasPositiveRoll(flow) || HasNegativeRoll(flow);
+
+			return (hasYawing1 || hasYawing2 || hasYawing3) && !hasRoll;
+		}
+
+		private bool HasNegativeYawing(FlowModel[] flow)
+		{
+			var hasYawing1 = (flow[4].Flow.X < 0 && flow[6].Flow.X < 0);
+			var hasYawing2 = (flow[5].Flow.X < 0 && flow[7].Flow.X < 0);
+			var hasYawing3 = (flow[0].Flow.X < 0 && flow[1].Flow.X < 0);
+
+			var hasRoll = HasPositiveRoll(flow) || HasNegativeRoll(flow);
+
+			return (hasYawing1 || hasYawing2 || hasYawing3) && !hasRoll;
 		}
 
 		protected FlowModel GetSuperposition(IEnumerable<FlowModel> flow, PointF point)
@@ -82,26 +166,6 @@ namespace RotationalMotion.Concrete.Estimators
 			};
 
 			return result;
-		}
-
-		protected override void ResolvePartOfCoefficients(OpticalFlowModel opticalFlow)
-		{
-			a = b = c = d = e = f = 0;
-
-			foreach (var flow in opticalFlow.Flow)
-			{
-				var x = flow.Point.X;
-				var y = flow.Point.Y;
-
-				a += (x * x * y * y + (y * y + 1) * (y * y + 1));
-				b += ((x * x + 1) * (x * x + 1) + x * x * y * y);
-				c += (x * x + y * y)* (x * x + y * y);
-				d += (x * y * (x * x + y * y + 2));
-				e += y;
-				f += x;
-			}
-
-
 		}
 	}
 }
